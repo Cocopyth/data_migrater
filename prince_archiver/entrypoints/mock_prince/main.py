@@ -5,6 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import httpx
+import pytz
 import redis.asyncio as redis
 from fastapi import FastAPI, Response
 from pydantic import FilePath, RedisDsn
@@ -16,23 +17,37 @@ from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message, Streams
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
+from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
     INTERVAL: int = 30
-    DATA_DIR: Path
+    # DATA_DIR: Path
     REDIS_DSN: RedisDsn
-    SRC_IMG: FilePath
+    # SRC_IMG: FilePath
 
 
-def _create_event() -> NewImagingEvent:
+def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
+    timestamp = row["datetime"]
+
+    # Convert the timestamp to a naive datetime
+    naive_timestamp = timestamp.to_pydatetime()
+
+    # Define the Amsterdam timezone
+    amsterdam_timezone = pytz.timezone("Europe/Amsterdam")
+
+    # Localize the naive datetime to the Amsterdam timezone
+    aware_timestamp = amsterdam_timezone.localize(naive_timestamp)
+
+    # Use the aware_timestamp in your NewImagingEvent
+    timestamp = aware_timestamp
     return NewImagingEvent(
         ref_id=ref_id,
         experiment_id="test-id",
-        timestamp=now(),
+        timestamp=timestamp,
         type="stitch",
         system="prince",
         img_count=1,
@@ -47,7 +62,7 @@ def _create_event() -> NewImagingEvent:
                 "station_name": "mock-station",
                 "exposure_time": 0.01,
                 "frame_rate": None,
-                "frame_size": (1, 1),
+                "frame_size": (3000, 4096),
                 "binning": "1x1",
                 "gain": 1,
                 "gamma": 1,
@@ -59,7 +74,7 @@ def _create_event() -> NewImagingEvent:
                 "grid_size": (1, 1),
             },
         },
-        local_path=ref_id.hex[:6],
+        local_path=row["total_path"],
     )
 
 
@@ -80,10 +95,10 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
     async def create_event(data: NewImagingEvent) -> Response:
         logging.info("[%s] Added timestep", data.ref_id)
 
-        make_timestep_directory(
-            target_dir=settings.DATA_DIR / data.system / data.local_path,
-            src_img=settings.SRC_IMG,
-        )
+        # make_timestep_directory(
+        #     target_dir=settings.DATA_DIR / data.system / data.local_path,
+        #     src_img=settings.SRC_IMG,
+        # )
 
         await stream.add(Message(data))
 
@@ -101,11 +116,13 @@ async def main():
     settings = Settings()
 
     transport = httpx.ASGITransport(app=create_app(settings=settings))
-
+    directory = "/dbx_copy/"
+    update_plate_info(directory)
+    run_info = get_current_folders(directory)
     client = httpx.AsyncClient(transport=transport, base_url="http://mockprince")
     async with client:
-        while True:
-            meta = _create_event()
+        for index, row in run_info.iterrows():
+            meta = _create_event(row)
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(asyncio.sleep(settings.INTERVAL))
 

@@ -17,7 +17,7 @@ x-code-and-data-volumes: &code-and-data-volumes
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
     - ./img/example.tif:/data/example.tif
-    - input_data:/data
+    - /media/admincorentin/5644166e-8493-472e-9f2e-a710ced69b0b/dbx_copy/:/dbx_copy
 
 
 services:
@@ -26,9 +26,9 @@ services:
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
     environment:
       INTERVAL: ${INTERVAL:-30}
-      DATA_DIR: /data
+#      DATA_DIR: /data
       REDIS_DSN: redis://redis:6379
-      SRC_IMG: /data/example.tif
+#      SRC_IMG: /data/example.tif
     depends_on:
       prestart:
         condition: service_completed_successfully
@@ -109,6 +109,6 @@ networks:
 
 
 volumes:
-  input_data:
+#  input_data:
   rabbitmq_data:
   redis_data:

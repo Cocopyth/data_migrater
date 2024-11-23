@@ -1,0 +1,146 @@
+"""Utils for defining environement variables and defining paths"""
+
+import json
+import os
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+from tqdm.autonotebook import tqdm
+
+
+
+temp_path = "/temp"
+if not os.path.exists(temp_path):
+    os.mkdir(temp_path)
+
+
+def get_param(
+    folder, directory
+):  # Very ugly but because interfacing with Matlab so most elegant solution.
+    # TODO(FK)
+    path_snap = os.path.join(directory, folder)
+    file1 = open(os.path.join(path_snap, "param.m"), "r")
+    Lines = file1.readlines()
+    ldict = {}
+    for line in Lines:
+        to_execute = line.split(";")[0]
+        relation = to_execute.split("=")
+        if len(relation) == 2:
+            ldict[relation[0].strip()] = relation[1].strip()
+        # exec(line.split(';')[0],globals(),ldict)
+    files = [
+        "/Img/TileConfiguration.txt.registered",
+        "/Analysis/skeleton.mat",
+        "/Analysis/skeleton_masked.mat",
+        "/Analysis/skeleton_pruned.mat",
+        "/Analysis/transform.mat",
+        "/Analysis/transform_corrupt.mat",
+        "/Analysis/skeleton_pruned_realigned.mat",
+        "/Analysis/nx_graph_pruned.p",
+        "/Analysis/nx_graph_pruned_width.p",
+        "/Analysis/nx_graph_pruned_labeled.p",
+        "/Analysis/nx_graph_pruned_labeled2.p",
+    ]
+    for file in files:
+        ldict[file] = os.path.isfile(path_snap + file)  # TODO(FK) change here
+    return ldict
+
+
+
+def update_plate_info(
+    directory: str, local=True, strong_constraint=True, suffix_data_info=""
+) -> None:
+    """*
+    1/ Download `data_info.json` file containing all information about acquisitions.
+    2/ Add all acquisition files in the `directory` path to the `data_info.json`.
+    3/ Upload the new version of data_info (actualised) to the dropbox.
+    An acquisition repositorie has a param.m file inside it.
+    """
+    # TODO(FK): add a local version without dropbox modification
+    listdir = os.listdir(directory)
+    source = f"/data_info.json"
+    target = os.path.join(temp_path, f"data_info{suffix_data_info}.json")
+    plate_info = {}
+    with tqdm(total=len(listdir), desc="analysed") as pbar:
+        for folder in listdir:
+            # print(folder)
+            path_snap = os.path.join(directory, folder)
+            if os.path.exists(os.path.join(path_snap, "Img")):
+                sub_list_files = os.listdir(os.path.join(path_snap, "Img"))
+                is_real_folder = os.path.isfile(os.path.join(path_snap, "param.m"))
+                if strong_constraint:
+                    is_real_folder *= (
+                        os.path.isfile(
+                            os.path.join(path_snap, "Img", "Img_r03_c05.tif")
+                        )
+                        * len(sub_list_files)
+                        >= 100
+                    )
+                if is_real_folder:
+                    params = get_param(folder, directory)
+                    ss = folder.split("_")[0]
+                    ff = folder.split("_")[1]
+                    date = datetime(
+                        year=int(ss[:4]),
+                        month=int(ss[4:6]),
+                        day=int(ss[6:8]),
+                        hour=int(ff[0:2]),
+                        minute=int(ff[2:4]),
+                    )
+                    params["date"] = datetime.strftime(date, "%d.%m.%Y, %H:%M:")
+                    params["folder"] = folder
+                    total_path = os.path.join(directory, folder)
+                    plate_info[total_path] = params
+            pbar.update(1)
+    with open(target, "w") as jsonf:
+        json.dump(plate_info, jsonf, indent=4)
+
+
+
+def get_data_info(local=False, suffix_data_info=""):
+    target = os.path.join(temp_path, f"data_info{suffix_data_info}.json")
+    data_info = pd.read_json(target, convert_dates=True).transpose()
+    if len(data_info) > 0:
+        data_info.index.name = "total_path"
+        data_info.reset_index(inplace=True)
+        data_info["Plate"] = data_info["Plate"].fillna(0)
+        data_info["unique_id"] = (
+            data_info["Plate"]
+            .astype(str)
+            .str.replace(r"\D", "", regex=True)
+            .astype(int)
+            .astype(str)
+            + "_"
+            + data_info["CrossDate"].str.replace("'", "").astype(str)
+        )
+
+        data_info["datetime"] = pd.to_datetime(
+            data_info["date"], format="%d.%m.%Y, %H:%M:"
+        )
+    return data_info
+
+
+
+
+
+def get_current_folders(
+    directory: str, local=True, suffix_data_info=""
+) -> pd.DataFrame:
+    """
+    Returns a pandas data frame with all informations about the acquisition files
+    inside the directory.
+    WARNING: directory must finish with '/'
+    """
+    # TODO(FK): solve the / problem
+    plate_info = get_data_info(local, suffix_data_info)
+    listdir = os.listdir(directory)
+    if len(plate_info) > 0:
+        return plate_info.loc[
+            np.isin(plate_info["folder"], listdir)
+            & (plate_info["total_path"] == directory + plate_info["folder"])
+        ]
+    else:
+        return plate_info
+
+
