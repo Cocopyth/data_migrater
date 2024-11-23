@@ -1,0 +1,114 @@
+---
+x-aws-env-variables: &aws-env-variables
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_SECRET_ACCESS_KEY: aws-access-key-id
+  AWS_ENDPOINT_URL: http://localhost.localstack.cloud:4566
+  AWS_BUCKET_NAME: mycostreams-raw-data
+
+
+x-code-volumes: &code-volumes
+  volumes:
+    - ./prince_archiver:/app/prince_archiver
+    - ./alembic/:/app/alembic
+
+
+x-code-and-data-volumes: &code-and-data-volumes
+  volumes:
+    - ./prince_archiver:/app/prince_archiver
+    - ./alembic/:/app/alembic
+    - ./img/example.tif:/data/example.tif
+    - input_data:/data
+
+
+services:
+  prince:
+    image: mycostreams/prince-archiver:${TAG:-latest}
+    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
+    environment:
+      INTERVAL: ${INTERVAL:-30}
+      DATA_DIR: /data
+      REDIS_DSN: redis://redis:6379
+      SRC_IMG: /data/example.tif
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+    <<: *code-and-data-volumes
+
+  state-manager:
+    environment:
+      <<: *aws-env-variables
+      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
+    <<: *code-volumes
+
+  exporter:
+    environment:
+      <<: *aws-env-variables
+    <<: *code-and-data-volumes
+
+  purger:
+    environment:
+      SRC_SYSTEMS_DELETE: '["prince"]'
+    <<: *code-and-data-volumes
+
+  prestart:
+    <<: *code-volumes
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.2.4
+    command: ["redis-server", "--save", "60", "1"]
+    ports:
+      - 127.0.0.1:6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+  s3:
+    image: localstack/localstack:latest
+    hostname: localhost.localstack.cloud
+    ports:
+      - 127.0.0.1:4566:4566
+    environment:
+      SERVICES: "s3"
+    volumes:
+      - "./scripts/init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - default
+
+
+networks:
+  traefik-public:
+
+
+volumes:
+  input_data:
+  rabbitmq_data:
+  redis_data:

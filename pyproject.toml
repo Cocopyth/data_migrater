@@ -1,0 +1,75 @@
+[tool.poetry]
+name = "prince-archiver"
+version = "0.1.0"
+description = ""
+authors = ["Isaac Williams <isaac.andrew.williams@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aio-pika = "^9.4.1"
+aiofiles = "^23.2.1"
+alembic = "^1.13.1"
+arq = "^0.25.0"
+fastapi-slim = "^0.115.0"
+httpx = "^0.27.0"
+jinja2 = "^3.1.4"
+pydantic = "^2.5.3"
+pydantic-settings = "^2.1.0"
+pyyaml = "^6.0.1"
+redis = "^5.2.0"
+s3fs = "^2024.3.0"
+sentry-sdk = "^1.45.0"
+sqlalchemy = {extras = ["postgresql-asyncpg"], version = "^2.0.29"}
+tenacity = "^9.0.0"
+uvicorn = "^0.30.0"
+
+[tool.poetry.group.dev.dependencies]
+behave = "^1.2.6"
+botocore-stubs = "^1.35.9"
+mypy = "^1.8.0"
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.7"
+ruff = "^0.4.8"
+testcontainers = {extras = ["postgres", "rabbitmq"], version = "^4.8.1"}
+types-aiofiles = "^23.2.0.20240331"
+types-pyyaml = "^6.0.12.12"
+
+
+
+[tool.mypy]
+exclude = ["tests"]
+plugins = "pydantic.mypy"
+
+
+[[tool.mypy.overrides]]
+module = [
+    "s3fs"
+]
+ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration"
+]
+
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+exclude = [
+    "tests/e2e/*"
+]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
