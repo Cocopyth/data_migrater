@@ -17,7 +17,7 @@ x-code-and-data-volumes: &code-and-data-volumes
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
     - ./img/example.tif:/data/example.tif
-    - /media/admincorentin/5644166e-8493-472e-9f2e-a710ced69b0b/dbx_copy/:/dbx_copy
+    - /mnt/sun-temp/TEMP/MOCK_ARETHA/:/dbx_copy
 
 
 services:
