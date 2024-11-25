@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Poetry (mock-prince-archiver)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (data_migrater)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (data_migrater)" project-jdk-type="Python SDK" />
 </project>
