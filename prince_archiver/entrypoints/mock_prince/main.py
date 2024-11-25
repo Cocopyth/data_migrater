@@ -12,6 +12,7 @@ from pydantic import FilePath, RedisDsn
 from pydantic_settings import BaseSettings
 
 from prince_archiver.adapters.streams import Stream
+from prince_archiver.definitions import EventType, System
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message, Streams
@@ -46,10 +47,10 @@ def _create_event(row) -> NewImagingEvent:
     timestamp = aware_timestamp
     return NewImagingEvent(
         ref_id=ref_id,
-        experiment_id="test-id",
+        experiment_id=row["unique_id"],
         timestamp=timestamp,
-        type="stitch",
-        system="prince",
+        type=EventType.STITCH,
+        system=System.PRINCE,
         img_count=1,
         metadata={
             "application": {
@@ -71,7 +72,7 @@ def _create_event(row) -> NewImagingEvent:
             },
             "stitching": {
                 "last_focused_at": "2000-01-01T00:00:00+00:00",
-                "grid_size": (1, 1),
+                "grid_size": (10, 15),
             },
         },
         local_path=row["total_path"],
@@ -94,12 +95,6 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
     @app.post("/timestep", status_code=200)
     async def create_event(data: NewImagingEvent) -> Response:
         logging.info("[%s] Added timestep", data.ref_id)
-
-        # make_timestep_directory(
-        #     target_dir=settings.DATA_DIR / data.system / data.local_path,
-        #     src_img=settings.SRC_IMG,
-        # )
-
         await stream.add(Message(data))
 
         return Response(status_code=200)

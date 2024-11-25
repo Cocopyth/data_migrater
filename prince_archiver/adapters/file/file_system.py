@@ -73,7 +73,7 @@ class AsyncFileSystem:
 
     async def get_size(self, path: Path) -> int:
         stat = await aiofiles.os.stat(path, executor=self.executor)
-        return stat.st_size
+        return stat.st_size//1000
 
     async def read_bytes(self, path: Path) -> bytes:
         return await anext(self.iter_bytes(path, chunk_size=None))

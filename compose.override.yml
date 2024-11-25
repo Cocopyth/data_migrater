@@ -34,31 +34,13 @@ services:
         condition: service_completed_successfully
     <<: *code-and-data-volumes
 
-  state-manager:
-    environment:
-      <<: *aws-env-variables
-      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
-    <<: *code-volumes
-
-  exporter:
-    environment:
-      <<: *aws-env-variables
-    <<: *code-and-data-volumes
-
-  purger:
-    environment:
-      SRC_SYSTEMS_DELETE: '["prince"]'
-    <<: *code-and-data-volumes
 
   prestart:
     <<: *code-volumes
     depends_on:
-      rabbitmq:
-        condition: service_healthy
       redis:
         condition: service_healthy
-      s3:
-        condition: service_healthy
+
 
   redis:
     image: redis:7.2.4
@@ -73,36 +55,6 @@ services:
     volumes:
       - redis_data:/data
 
-  s3:
-    image: localstack/localstack:latest
-    hostname: localhost.localstack.cloud
-    ports:
-      - 127.0.0.1:4566:4566
-    environment:
-      SERVICES: "s3"
-    volumes:
-      - "./scripts/init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-
-  rabbitmq:
-    image: rabbitmq:3.13-management
-    ports:
-      - 5672:5672
-      - 15672:15672
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 3
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - default
-
 
 networks:
   traefik-public:
@@ -110,5 +62,5 @@ networks:
 
 volumes:
 #  input_data:
-  rabbitmq_data:
+#  rabbitmq_data:
   redis_data:

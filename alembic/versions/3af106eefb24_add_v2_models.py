@@ -53,7 +53,7 @@ def upgrade() -> None:
     op.create_table(
         "event_archives",
         sa.Column("id", sa.Uuid(native_uuid=False), nullable=False),
-        sa.Column("size", sa.Integer(), nullable=False),
+        sa.Column("size", sa.BigInteger(), nullable=False),
         sa.Column("imaging_event_id", sa.Uuid(native_uuid=False), nullable=False),
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
         sa.Column("updated_at", sa.TIMESTAMP(timezone=True), nullable=False),
