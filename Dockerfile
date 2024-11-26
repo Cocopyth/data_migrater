@@ -17,7 +17,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --only main && rm -rf $POETRY_CACHE_DIR
 
 COPY ./prince_archiver /app/prince_archiver
-RUN poetry install
+RUN #poetry install
 
 
 # The runtime image, used to just run the code provided its virtual environment
