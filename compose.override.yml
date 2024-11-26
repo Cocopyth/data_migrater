@@ -14,7 +14,7 @@ x-code-volumes: &code-volumes
 
 x-code-and-data-volumes: &code-and-data-volumes
   volumes:
-    - ./prince_archiver:/app/prince_archiver
+#    - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
     - ./img/example.tif:/data/example.tif
     - /mnt/sun-temp/TEMP/MOCK_ARETHA/:/dbx_copy
