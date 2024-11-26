@@ -25,10 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     INTERVAL: int = 30
-    # DATA_DIR: Path
     REDIS_DSN: RedisDsn
-    # SRC_IMG: FilePath
-
 
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
