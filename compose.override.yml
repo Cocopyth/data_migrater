@@ -27,6 +27,8 @@ services:
     environment:
       INTERVAL: ${INTERVAL:-30}
       REDIS_DSN: redis://redis:6379
+      DATA_DIR: /path/to/data
+      SRC_IMG: /path/to/src_img
     depends_on:
       prestart:
         condition: service_completed_successfully
