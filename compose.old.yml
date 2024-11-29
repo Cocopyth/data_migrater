@@ -24,6 +24,7 @@ services:
   prince:
     image: mycostreams/prince-archiver:${TAG:-latest}
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
+#    python -m prince_archiver.entrypoints.mock_prince.main
     environment:
       INTERVAL: ${INTERVAL:-30}
       REDIS_DSN: redis://tsu-dsk001.ipa.amolf.nl:6380
@@ -33,26 +34,6 @@ services:
 
 
 
-
-#  redis:
-#    image: redis:7.2.4
-#    command: ["redis-server", "--save", "60", "1"]
-#    ports:
-#      - 127.0.0.1:6379:6379
-#    healthcheck:
-#      test: ["CMD", "redis-cli", "ping"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    volumes:
-#      - redis_data:/data
-
-
 networks:
   traefik-public:
 
-
-volumes:
-#  input_data:
-#  rabbitmq_data:
-  redis_data:

@@ -1,24 +1,39 @@
 ---
+x-aws-env-variables: &aws-env-variables
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_SECRET_ACCESS_KEY: aws-access-key-id
+  AWS_ENDPOINT_URL: http://localhost.localstack.cloud:4566
+  AWS_BUCKET_NAME: mycostreams-raw-data
 
-x-redis-env-variable: &redis-env-variable
-  REDIS_DSN: ${REDIS_DSN:-redis://redis:6379}
+
+x-code-volumes: &code-volumes
+  volumes:
+    - ./prince_archiver:/app/prince_archiver
+    - ./alembic/:/app/alembic
+
+
+x-code-and-data-volumes: &code-and-data-volumes
+  volumes:
+#    - ./prince_archiver:/app/prince_archiver
+    - ./alembic/:/app/alembic
+    - ./img/example.tif:/data/example.tif
+    - /mnt/sun-temp/TEMP/MOCK_ARETHA/:/dbx_copy
 
 
 services:
-  prestart:
+  prince:
     image: mycostreams/prince-archiver:${TAG:-latest}
-    command: ["./prestart.sh"]
+    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
+#    python -m prince_archiver.entrypoints.mock_prince.main
     environment:
-      <<: [*redis-env-variable]
-#    depends_on:
-#      db:
-#        condition: service_healthy
-    networks:
-      - default
-    volumes:
-      - "./scripts/prestart.sh:/app/prestart.sh"
+      INTERVAL: ${INTERVAL:-30}
+      REDIS_DSN: redis://tsu-dsk001.ipa.amolf.nl:6380
+      DATA_DIR: /data/
+      SRC_IMG: /data/example.tif
+    <<: *code-and-data-volumes
 
 
 
 networks:
-  default:
+  traefik-public:
+
