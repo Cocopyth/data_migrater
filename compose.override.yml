@@ -26,7 +26,7 @@ services:
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
     environment:
       INTERVAL: ${INTERVAL:-30}
-      REDIS_DSN: redis://redis:6379
+      REDIS_DSN: redis://tsu-dsk001.ipa.amolf.nl:6380
       DATA_DIR: /data/
       SRC_IMG: /data/example.tif
     depends_on:
