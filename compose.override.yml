@@ -29,17 +29,9 @@ services:
       REDIS_DSN: redis://tsu-dsk001.ipa.amolf.nl:6380
       DATA_DIR: /data/
       SRC_IMG: /data/example.tif
-    depends_on:
-      prestart:
-        condition: service_completed_successfully
     <<: *code-and-data-volumes
 
 
-  prestart:
-    <<: *code-volumes
-    depends_on:
-      redis:
-        condition: service_healthy
 
 
 #  redis:
