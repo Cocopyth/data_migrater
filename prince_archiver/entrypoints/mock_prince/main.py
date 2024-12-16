@@ -75,27 +75,6 @@ def _create_event(row) -> NewImagingEvent:
         local_path=row["total_path"],
     )
 
-def create_app() -> FastAPI:
-    client = redis.from_url(REDIS_DSN)
-
-    @asynccontextmanager
-    async def lifespan(_: FastAPI):
-        async with client:
-            yield
-
-    stream = Stream(name=Streams.imaging_events, redis=client)
-    # logging.info(REDIS_DSN,Streams.imaging_events)
-    app = FastAPI(lifespan=lifespan)
-
-    @app.post("/timestep", status_code=200)
-    async def create_event(data: NewImagingEvent) -> Response:
-        logging.info("[%s] Added timestep", data.ref_id)
-        await stream.add(Message(data))
-        logging.info("Added to stream: %s", data)
-        return Response(status_code=200)
-
-    return app
-
 
 async def main():
     """Add new timestep directory every minute."""
@@ -103,24 +82,17 @@ async def main():
 
     logging.info("Starting up mock prince")
     logging.info(REDIS_DSN)
-    transport = httpx.ASGITransport(app=create_app())
     directory = "/dbx_copy/"
     update_plate_info(directory)
     run_info = get_current_folders(directory)
-    client = httpx.AsyncClient(transport=transport, base_url="http://mockprince")
+    client = redis.from_url(REDIS_DSN)
     async with client:
+        stream = Stream(name=Streams.imaging_events, redis=client)
         for index, row in run_info.iterrows():
             meta = _create_event(row)
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(asyncio.sleep(30))
-
-                tg.create_task(
-                    client.post(
-                        "/timestep",
-                        json=meta.model_dump(mode="json", by_alias=True),
-                    )
-                )
-
+            logging.info(("posting", meta.ref_id))
+            await asyncio.sleep(30)
+            await stream.add(Message(meta))
 
 if __name__ == "__main__":
     asyncio.run(main())
