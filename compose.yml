@@ -22,7 +22,9 @@ x-code-and-data-volumes: &code-and-data-volumes
 
 services:
   prince:
-    image: mycostreams/prince-archiver:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
 #    python -m prince_archiver.entrypoints.mock_prince.main
     environment:
