@@ -91,7 +91,7 @@ def create_app() -> FastAPI:
     async def create_event(data: NewImagingEvent) -> Response:
         logging.info("[%s] Added timestep", data.ref_id)
         await stream.add(Message(data))
-
+        logging.info("Added to stream: %s", data)
         return Response(status_code=200)
 
     return app
