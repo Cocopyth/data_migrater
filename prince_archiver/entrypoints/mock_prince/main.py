@@ -72,11 +72,11 @@ def _create_event(row) -> NewImagingEvent:
         local_path=f"Images/{row['folder']}",
     )
 
-command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
 
 async def main(directory):
     """Add new timestep directory every minute."""
     for j in range(2,3):
+        command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
         try:
             subprocess.run(command, shell=True, check=True)
             print("Command executed successfully!")
