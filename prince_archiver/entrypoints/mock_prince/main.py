@@ -47,11 +47,11 @@ def _create_event(row) -> NewImagingEvent:
         experiment_id=row["unique_id"],
         timestamp=timestamp,
         type=EventType.STITCH,
-        system="hendrix",
+        system="prince",
         img_count=1,
         metadata={
             "application": {
-                "application": "prince",
+                "application": "mock-prince",
                 "version": "v0.1.0",
                 "user": "mock-user",
             },
