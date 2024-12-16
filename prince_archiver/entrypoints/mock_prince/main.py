@@ -1,25 +1,18 @@
 import asyncio
 import logging
-from contextlib import asynccontextmanager
-from pathlib import Path
 from uuid import uuid4
 
-import httpx
 import pytz
 import redis.asyncio as redis
-from fastapi import FastAPI, Response
-from pydantic import FilePath, RedisDsn
-from pydantic_settings import BaseSettings
+
 
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.definitions import EventType, System
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message, Streams
-from prince_archiver.test_utils.utils import make_timestep_directory
-from prince_archiver.utils import now
+
 from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders
-from typing import Optional
 
 LOGGER = logging.getLogger(__name__)
 
@@ -72,7 +65,7 @@ def _create_event(row) -> NewImagingEvent:
                 "grid_size": (10, 15),
             },
         },
-        local_path=row["total_path"],
+        local_path=f"Images/{row['folder']}",
     )
 
 
@@ -87,7 +80,13 @@ async def main():
     run_info = get_current_folders(directory)
     client = redis.from_url(REDIS_DSN)
     async with client:
-        stream = Stream(name=Streams.imaging_events, redis=client)
+        pong = await client.ping()
+        if pong:
+            logging.info("Successfully connected to Redis")
+        else:
+            logging.error("Redis connection failed")
+    async with client:
+        stream = Stream(name='dlm:imaging-events', redis=client)
         for index, row in run_info.iterrows():
             meta = _create_event(row)
             logging.info(("posting", meta.ref_id))
