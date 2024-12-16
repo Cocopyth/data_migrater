@@ -101,6 +101,7 @@ async def main():
     configure_logging()
 
     logging.info("Starting up mock prince")
+    logging.info(REDIS_DSN)
     transport = httpx.ASGITransport(app=create_app())
     directory = "/dbx_copy/"
     update_plate_info(directory)
