@@ -86,7 +86,7 @@ async def main():
         else:
             logging.error("Redis connection failed")
     async with client:
-        stream = Stream(name='dlm:imaging-events', redis=client)
+        stream = Stream(name='dlm:new-imaging-event', redis=client)
         for index, row in run_info.iterrows():
             meta = _create_event(row)
             logging.info(("posting", meta.ref_id))
