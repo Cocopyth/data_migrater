@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="your_project_name",
     version="0.1.0",
-    python_requires=">=3.12",
+    python_requires=">=3.8",
     install_requires=[
         "aio-pika==9.4.1",
         "aiofiles==23.2.1",
