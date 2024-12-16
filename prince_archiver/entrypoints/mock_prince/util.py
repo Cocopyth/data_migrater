@@ -10,7 +10,7 @@ from tqdm.autonotebook import tqdm
 
 
 
-temp_path = "/temp"
+temp_path = "/mnt/sun-temp/TEMP"
 if not os.path.exists(temp_path):
     os.mkdir(temp_path)
 
