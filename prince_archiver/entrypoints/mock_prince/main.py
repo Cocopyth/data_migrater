@@ -84,7 +84,7 @@ def create_app() -> FastAPI:
             yield
 
     stream = Stream(name=Streams.imaging_events, redis=client)
-    logging.info(REDIS_DSN,Streams.imaging_events)
+    # logging.info(REDIS_DSN,Streams.imaging_events)
     app = FastAPI(lifespan=lifespan)
 
     @app.post("/timestep", status_code=200)
