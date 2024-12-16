@@ -75,7 +75,7 @@ def _create_event(row) -> NewImagingEvent:
 
 async def main(directory):
     """Add new timestep directory every minute."""
-    for j in range(2,3):
+    for j in range(4,10):
         command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
         try:
             subprocess.run(command, shell=True, check=True)
@@ -101,8 +101,8 @@ async def main(directory):
             for index, row in run_info.iterrows():
                 meta = _create_event(row)
                 logging.info(("posting", meta.ref_id))
-                await asyncio.sleep(30)
                 await stream.add(Message(meta))
+                await asyncio.sleep(10)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
