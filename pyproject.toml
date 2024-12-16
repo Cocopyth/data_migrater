@@ -26,6 +26,8 @@ numpy = "^1.24.0"  # Add numpy dependency
 pandas = "^2.0.0"  # Add pandas dependency
 tqdm = "^4.66.0"   # Add tqdm dependency
 pytz = "^2024.2"
+setuptools= "^45.2.0"
+
 
 [tool.poetry.group.dev.dependencies]
 behave = "^1.2.6"
