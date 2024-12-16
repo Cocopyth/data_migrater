@@ -2,6 +2,7 @@ import asyncio
 import logging
 from uuid import uuid4
 import sys
+import subprocess
 
 import pytz
 import redis.asyncio as redis
@@ -20,6 +21,8 @@ LOGGER = logging.getLogger(__name__)
 REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 
 
+
+# Run the command
 
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
@@ -69,30 +72,37 @@ def _create_event(row) -> NewImagingEvent:
         local_path=f"Images/{row['folder']}",
     )
 
+command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
 
 async def main(directory):
     """Add new timestep directory every minute."""
-    configure_logging()
+    for j in range(2,3):
+        try:
+            subprocess.run(command, shell=True, check=True)
+            print("Command executed successfully!")
+        except subprocess.CalledProcessError as e:
+            print(f"Command failed with error: {e}")
+        configure_logging()
 
-    logging.info("Starting up mock prince")
-    logging.info(REDIS_DSN)
-    # directory = "/dbx_copy/"
-    update_plate_info(directory)
-    run_info = get_current_folders(directory)
-    client = redis.from_url(REDIS_DSN)
-    async with client:
-        pong = await client.ping()
-        if pong:
-            logging.info("Successfully connected to Redis")
-        else:
-            logging.error("Redis connection failed")
-    async with client:
-        stream = Stream(name='dlm:new-imaging-event', redis=client)
-        for index, row in run_info.iterrows():
-            meta = _create_event(row)
-            logging.info(("posting", meta.ref_id))
-            await asyncio.sleep(30)
-            await stream.add(Message(meta))
+        logging.info("Starting up mock prince")
+        logging.info(REDIS_DSN)
+        # directory = "/dbx_copy/"
+        update_plate_info(directory)
+        run_info = get_current_folders(directory)
+        client = redis.from_url(REDIS_DSN)
+        async with client:
+            pong = await client.ping()
+            if pong:
+                logging.info("Successfully connected to Redis")
+            else:
+                logging.error("Redis connection failed")
+        async with client:
+            stream = Stream(name='dlm:new-imaging-event', redis=client)
+            for index, row in run_info.iterrows():
+                meta = _create_event(row)
+                logging.info(("posting", meta.ref_id))
+                await asyncio.sleep(30)
+                await stream.add(Message(meta))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
