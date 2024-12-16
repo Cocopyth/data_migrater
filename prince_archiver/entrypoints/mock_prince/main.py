@@ -80,7 +80,7 @@ def _create_event(row) -> NewImagingEvent:
 
 
 def create_app(*, settings: Settings | None = None) -> FastAPI:
-    settings = settings or Settings()
+    # settings = settings or Settings()
     client = redis.from_url(str(settings.REDIS_DSN))
 
     @asynccontextmanager
@@ -89,7 +89,7 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
             yield
 
     stream = Stream(name=Streams.imaging_events, redis=client)
-    logging.info(str(settings.REDIS_DSN),Streams.imaging_events)
+    logging.info("tsu-dsk001.ipa.amolf.nl:6380",Streams.imaging_events)
     app = FastAPI(lifespan=lifespan)
 
     @app.post("/timestep", status_code=200)
@@ -108,9 +108,9 @@ async def main():
 
     logging.info("Starting up mock prince")
 
-    settings = Settings()
+    # settings = Settings()
 
-    transport = httpx.ASGITransport(app=create_app(settings=settings))
+    transport = httpx.ASGITransport(app=create_app())
     directory = "/dbx_copy/"
     update_plate_info(directory)
     run_info = get_current_folders(directory)
@@ -119,7 +119,7 @@ async def main():
         for index, row in run_info.iterrows():
             meta = _create_event(row)
             async with asyncio.TaskGroup() as tg:
-                tg.create_task(asyncio.sleep(settings.INTERVAL))
+                tg.create_task(asyncio.sleep(30))
 
                 tg.create_task(
                     client.post(
