@@ -51,7 +51,7 @@ def _create_event(row) -> NewImagingEvent:
         img_count=1,
         metadata={
             "application": {
-                "application": "mock-prince",
+                "application": "prince",
                 "version": "v0.1.0",
                 "user": "mock-user",
             },
