@@ -73,7 +73,7 @@ def _create_event(row) -> NewImagingEvent:
         local_path=row["total_path"],
     )
 
-REDIS_DSN = "tsu-dsk001.ipa.amolf.nl:6380"
+REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 def create_app() -> FastAPI:
     client = redis.from_url(REDIS_DSN)
 
