@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
+    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main","/dbx_copy"]
 #    python -m prince_archiver.entrypoints.mock_prince.main
     environment:
       INTERVAL: ${INTERVAL:-30}

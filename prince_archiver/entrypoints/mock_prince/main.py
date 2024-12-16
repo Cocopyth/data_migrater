@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from uuid import uuid4
+import sys
 
 import pytz
 import redis.asyncio as redis
@@ -40,7 +41,7 @@ def _create_event(row) -> NewImagingEvent:
         experiment_id=row["unique_id"],
         timestamp=timestamp,
         type=EventType.STITCH,
-        system="tsu_exp002",
+        system="tsu-exp002",
         img_count=1,
         metadata={
             "application": {
@@ -69,13 +70,13 @@ def _create_event(row) -> NewImagingEvent:
     )
 
 
-async def main():
+async def main(directory):
     """Add new timestep directory every minute."""
     configure_logging()
 
     logging.info("Starting up mock prince")
     logging.info(REDIS_DSN)
-    directory = "/dbx_copy/"
+    # directory = "/dbx_copy/"
     update_plate_info(directory)
     run_info = get_current_folders(directory)
     client = redis.from_url(REDIS_DSN)
@@ -94,4 +95,8 @@ async def main():
             await stream.add(Message(meta))
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <directory>")
+        sys.exit(1)
+    directory = sys.argv[1]
+    asyncio.run(main(directory))
