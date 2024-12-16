@@ -24,11 +24,6 @@ from typing import Optional
 LOGGER = logging.getLogger(__name__)
 
 
-class Settings(BaseSettings):
-    INTERVAL: int = 30
-    DATA_DIR: Path
-    REDIS_DSN: str
-    SRC_IMG: FilePath
 
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
@@ -78,10 +73,9 @@ def _create_event(row) -> NewImagingEvent:
         local_path=row["total_path"],
     )
 
-
-def create_app(*, settings: Settings | None = None) -> FastAPI:
-    # settings = settings or Settings()
-    client = redis.from_url(str(settings.REDIS_DSN))
+REDIS_DSN = "tsu-dsk001.ipa.amolf.nl:6380"
+def create_app() -> FastAPI:
+    client = redis.from_url(REDIS_DSN)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -89,7 +83,7 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
             yield
 
     stream = Stream(name=Streams.imaging_events, redis=client)
-    logging.info("tsu-dsk001.ipa.amolf.nl:6380",Streams.imaging_events)
+    logging.info(REDIS_DSN,Streams.imaging_events)
     app = FastAPI(lifespan=lifespan)
 
     @app.post("/timestep", status_code=200)
@@ -107,9 +101,6 @@ async def main():
     configure_logging()
 
     logging.info("Starting up mock prince")
-
-    # settings = Settings()
-
     transport = httpx.ASGITransport(app=create_app())
     directory = "/dbx_copy/"
     update_plate_info(directory)
