@@ -5,7 +5,7 @@ description = ""
 authors = ["Isaac Williams <isaac.andrew.williams@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.12"
 aio-pika = "^9.4.1"
 aiofiles = "^23.2.1"
 alembic = "^1.13.1"
