@@ -8,10 +8,10 @@ import redis.asyncio as redis
 
 
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.definitions import EventType, System
+from prince_archiver.definitions import EventType
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
-from prince_archiver.service_layer.streams import Message, Streams
+from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders
 
