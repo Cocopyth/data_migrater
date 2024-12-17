@@ -93,7 +93,7 @@ async def main(directory):
         # directory = "/dbx_copy/"
         update_plate_info(directory)
         run_info = get_current_folders(directory)
-        new_rows = run_info[~run_info["folder"].isin(processed_rows["folder"])]
+        new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
 
         client = redis.from_url(REDIS_DSN)
         async with client:
