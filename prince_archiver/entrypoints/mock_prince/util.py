@@ -172,3 +172,13 @@ def find_max_row_col(directory):
             max_yy = max(max_yy, yy)
 
     return max_xx, max_yy
+
+PROCESSED_ROWS_FILE = os.path.join(temp_path,"processed_rows.csv")
+
+def load_processed_rows():
+    if os.path.exists(PROCESSED_ROWS_FILE):
+        return pd.read_csv(PROCESSED_ROWS_FILE)
+    return pd.DataFrame(columns=["unique_id"])
+
+def save_processed_rows(processed_rows):
+    processed_rows.to_csv(PROCESSED_ROWS_FILE, index=False)

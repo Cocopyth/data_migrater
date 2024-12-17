@@ -4,6 +4,7 @@ from uuid import uuid4
 import sys
 import subprocess
 
+import pandas as pd
 import pytz
 import redis.asyncio as redis
 
@@ -14,7 +15,8 @@ from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message
 
-from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders,find_max_row_col
+from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
+    load_processed_rows, save_processed_rows
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +77,9 @@ def _create_event(row) -> NewImagingEvent:
 
 async def main(directory):
     """Add new timestep directory every minute."""
-    for j in range(4,10):
+    processed_rows = load_processed_rows()
+
+    for j in range(6,10):
         command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
         try:
             subprocess.run(command, shell=True, check=True)
@@ -89,6 +93,8 @@ async def main(directory):
         # directory = "/dbx_copy/"
         update_plate_info(directory)
         run_info = get_current_folders(directory)
+        new_rows = run_info[~run_info["folder"].isin(processed_rows["folder"])]
+
         client = redis.from_url(REDIS_DSN)
         async with client:
             pong = await client.ping()
@@ -98,11 +104,13 @@ async def main(directory):
                 logging.error("Redis connection failed")
         async with client:
             stream = Stream(name='dlm:new-imaging-event', redis=client)
-            for index, row in run_info.iterrows():
+            for index, row in new_rows.iterrows():
                 meta = _create_event(row)
                 logging.info(("posting", meta.ref_id))
                 await stream.add(Message(meta))
-                await asyncio.sleep(10)
+                processed_rows = pd.concat([processed_rows, pd.DataFrame([row])], ignore_index=True)
+                save_processed_rows(processed_rows)
+                await asyncio.sleep(1)
             await asyncio.sleep(60)
 
 
