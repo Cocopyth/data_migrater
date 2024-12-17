@@ -54,21 +54,20 @@ fi
 
 # Unzip files and maintain the correct structure
 echo "Checking for zipped files in $LOCAL_DEST..."
-find "$LOCAL_DEST" -type f -name "*.zip" | while read -r zip_file; do
+find "$LOCAL_DEST" -type f -name "*.zip" | parallel -j "$(nproc)" --no-notice '
   # Get the directory containing the .zip file
-  parent_dir=$(dirname "$zip_file")
+  parent_dir=$(dirname {})
 
   # Get the base name of the .zip file (without extension)
-  folder_name=$(basename "$zip_file" .zip)
+  folder_name=$(basename {} .zip)
 
   # Create the extraction directory
   extract_dir="$parent_dir/$folder_name"
   mkdir -p "$extract_dir"
 
   # Extract the .zip file into the corresponding folder
-  unzip -q "$zip_file" -d "$extract_dir"
-  rm "$zip_file"
-  echo "Extracted $zip_file to $extract_dir"
-done
+  unzip -q {} -d "$extract_dir"
+  rm {}
+  echo "Extracted {} to $extract_dir'
 
 echo "Folder $FOLDER_INDEX processed with flattened structure!"
