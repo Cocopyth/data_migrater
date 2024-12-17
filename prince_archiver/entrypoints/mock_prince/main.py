@@ -103,6 +103,8 @@ async def main(directory):
                 logging.info(("posting", meta.ref_id))
                 await stream.add(Message(meta))
                 await asyncio.sleep(10)
+            await asyncio.sleep(60)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
