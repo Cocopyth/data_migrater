@@ -144,3 +144,31 @@ def get_current_folders(
         return plate_info
 
 
+def find_max_row_col(directory):
+    """
+    Finds the maximum row (yy) and column (xx) values from filenames in the specified directory.
+
+    Parameters:
+    directory (str): The path to the directory containing the image files.
+
+    Returns:
+    tuple: A tuple containing the maximum xx and yy values.
+    """
+
+    # Initialize variables to store the maximum values of xx and yy
+    max_xx = 0
+    max_yy = 0
+
+    # Regular expression pattern to match filenames of the form Img_rxx_cyy.tif
+    pattern = r"Img_r(\d+)_c(\d+)\.tif"
+
+    # Iterate over all files in the directory
+    for filename in os.listdir(directory):
+        match = re.match(pattern, filename)
+        if match:
+            xx = int(match.group(1))
+            yy = int(match.group(2))
+            max_xx = max(max_xx, xx)
+            max_yy = max(max_yy, yy)
+
+    return max_xx, max_yy

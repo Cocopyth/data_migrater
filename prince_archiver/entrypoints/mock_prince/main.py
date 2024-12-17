@@ -14,7 +14,7 @@ from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message
 
-from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders
+from prince_archiver.entrypoints.mock_prince.util import  update_plate_info, get_current_folders,find_max_row_col
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
     timestamp = row["datetime"]
-
+    grid_size = find_max_row_col(row["total_path"])
     # Convert the timestamp to a naive datetime
     naive_timestamp = timestamp.to_pydatetime()
 
@@ -66,7 +66,7 @@ def _create_event(row) -> NewImagingEvent:
             },
             "stitching": {
                 "last_focused_at": "2000-01-01T00:00:00+00:00",
-                "grid_size": (10, 15),
+                "grid_size": grid_size,
             },
         },
         local_path=f"Images/{row['folder']}",
