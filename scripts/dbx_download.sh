@@ -16,8 +16,8 @@ FOLDER_INDEX=$1
 
 # Ensure local destination directory exists
 mkdir -p "$LOCAL_DEST"
-echo "Clearing contents of $LOCAL_DEST..."
-rm -rf "$LOCAL_DEST"/*
+echo "Removing files and directories older than 2 days in $LOCAL_DEST..."
+find "$LOCAL_DEST" -mindepth 1 -mtime +2 -exec rm -rf {} +
 
 # List folders, sort by name, and select the jth folder
 FOLDERS=$(rclone lsd "$REMOTE_PATH" | awk '{print $NF}' | sort)
