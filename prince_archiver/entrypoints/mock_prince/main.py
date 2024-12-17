@@ -79,7 +79,7 @@ async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
 
-    for j in range(10,200):
+    for j in range(6,200):
         command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
         try:
             subprocess.run(command, shell=True, check=True)
