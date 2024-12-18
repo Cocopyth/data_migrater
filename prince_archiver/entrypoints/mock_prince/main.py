@@ -3,6 +3,7 @@ import logging
 from uuid import uuid4
 import sys
 import subprocess
+import os
 
 import pandas as pd
 import pytz
@@ -29,7 +30,8 @@ REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
     timestamp = row["datetime"]
-    grid_size = find_max_row_col(row["total_path"])
+    img_path = os.path.join(row["total_path"],"Img")
+    img_count,grid_size = find_max_row_col(img_path)
     # Convert the timestamp to a naive datetime
     naive_timestamp = timestamp.to_pydatetime()
 
@@ -47,7 +49,7 @@ def _create_event(row) -> NewImagingEvent:
         timestamp=timestamp,
         type=EventType.STITCH,
         system="tsu-exp002",
-        img_count=1,
+        img_count=img_count,
         metadata={
             "application": {
                 "application": "mock-prince",
@@ -55,23 +57,23 @@ def _create_event(row) -> NewImagingEvent:
                 "user": "mock-user",
             },
             "camera": {
-                "model": "mock-model",
-                "station_name": "mock-station",
-                "exposure_time": 0.01,
+                "model": "Basler acA4112-20um SN:40193936",
+                "station_name": f"#{row['PrincePos']}",
+                "exposure_time": 0.1,
                 "frame_rate": None,
-                "frame_size": (3000, 4096),
+                "frame_size": (4096, 3000),
                 "binning": "1x1",
-                "gain": 1,
+                "gain": 0.0,
                 "gamma": 1,
-                "intensity": [0, 0, 0],
-                "bits_per_pixel": 0,
+                "intensity": [0],
+                "bits_per_pixel": 8,
             },
             "stitching": {
-                "last_focused_at": "2000-01-01T00:00:00+00:00",
+                "last_focused_at": None,
                 "grid_size": grid_size,
             },
         },
-        local_path=f"Images/{row['folder']}",
+        local_path=f"Images/{row['folder']}/Img",
     )
 
 

@@ -164,15 +164,17 @@ def find_max_row_col(directory):
     pattern = r"Img_r(\d+)_c(\d+)\.tif"
 
     # Iterate over all files in the directory
+    k = 0
     for filename in os.listdir(directory):
         match = re.match(pattern, filename)
         if match:
+            k+=1
             xx = int(match.group(1))
             yy = int(match.group(2))
             max_xx = max(max_xx, xx)
             max_yy = max(max_yy, yy)
 
-    return max_xx, max_yy
+    return k,(max_xx, max_yy)
 
 PROCESSED_ROWS_FILE = os.path.join(temp_path,"processed_rows.csv")
 
