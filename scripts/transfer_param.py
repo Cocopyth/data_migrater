@@ -21,6 +21,8 @@ id_to_param_mapping = {
     "EPY2412A088": "param_Plate13.m",
     "COL2412A035": "param_Plate14.m",
     "COL2412A041": "param_Plate19.m",
+    "COL2412A043": "param_Plate21.m",
+    "SCP2501D007": "param_Plate03.m",
 }
 
 # Iterate through the folders and process the files
