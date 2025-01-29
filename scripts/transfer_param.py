@@ -9,9 +9,18 @@ folder_base_path = r"/mnt/prince/"  # Update this to the path containing param f
 # Example: {'SCP2501D001': 'param_Plate01', 'COL2412A034': 'param_Plate02'}
 id_to_param_mapping = {
     "SCP2501D001": "param_Plate01.m",
-    # "COL2412A034": "param_Plate02",
-    # "EPY2412A088": "param_Plate03",
-    # Add other mappings here
+    "COL2412A034": "param_Plate20.m",
+    "ART2501A044": "param_Plate02.m",
+    "SCP2501D006": "param_Plate05.m",
+    "COL2412A031": "param_Plate07.m",
+    # "CTA2412A022": "param_Plate20.m",
+    "COL2412A039": "param_Plate09.m",
+    "ART2412A026": "param_Plate10.m",
+    "SCP2501D010": "param_Plate11.m",
+    "SCP2501D012": "param_Plate12.m",
+    "EPY2412A088": "param_Plate13.m",
+    "COL2412A035": "param_Plate14.m",
+    "COL2412A041": "param_Plate19.m",
 }
 
 # Iterate through the folders and process the files
