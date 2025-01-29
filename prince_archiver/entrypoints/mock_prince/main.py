@@ -23,9 +23,13 @@ LOGGER = logging.getLogger(__name__)
 
 REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 
+data_migration = pd.read_excel('2025_Data_migration.xlsx')
 
+# Create a mapping dictionary from OLD_UI to UI
+id_mapping = dict(zip(data_migration['OLD_UI'], data_migration['UI']))
 
 # Run the command
+
 
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
@@ -105,8 +109,11 @@ async def main(directory):
             else:
                 logging.error("Redis connection failed")
         async with client:
-            stream = Stream(name='dlm:new-imaging-event', redis=client)
+            stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
             for index, row in new_rows.iterrows():
+                old_id = row['unique_id']
+                if old_id in id_mapping:
+                    row['unique_id'] = id_mapping[old_id]
                 meta = _create_event(row)
                 logging.info(("posting", meta.ref_id))
                 await stream.add(Message(meta))
