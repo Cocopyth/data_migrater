@@ -13,7 +13,7 @@ id_to_param_mapping = {
     "ART2501A044": "param_Plate02.m",
     "SCP2501D006": "param_Plate05.m",
     "COL2412A031": "param_Plate07.m",
-    # "CTA2412A022": "param_Plate20.m",
+    "CTA2412A022": "param_Plate08.m",
     "COL2412A039": "param_Plate09.m",
     "ART2412A026": "param_Plate10.m",
     "SCP2501D010": "param_Plate11.m",
