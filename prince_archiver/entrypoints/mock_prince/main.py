@@ -23,7 +23,9 @@ LOGGER = logging.getLogger(__name__)
 
 REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 
-data_migration = pd.read_excel('2025_Data_migration.xlsx')
+script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the script's directory
+file_path = os.path.join(script_dir, "2025_Data_migration.xlsx")
+data_migration = pd.read_excel(file_path)
 
 # Create a mapping dictionary from OLD_UI to UI
 id_mapping = dict(zip(data_migration['OLD_UI'], data_migration['UI']))
