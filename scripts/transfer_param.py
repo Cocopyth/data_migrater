@@ -23,7 +23,7 @@ for folder_name in os.listdir(folder_base_path):
         if os.path.exists(param_file_path):
             # Move and rename the param file
             destination_path = os.path.join(folder_base_path, folder_name, "param.m")
-            shutil.move(param_file_path, destination_path)
+            shutil.copy(param_file_path, destination_path)
             print(f"Moved {param_file_name} to {destination_path}")
         else:
             print(f"Param file {param_file_name} not found.")
