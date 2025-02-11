@@ -87,8 +87,10 @@ async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
 
-    for j in range(50,200):
-        command = f'bash /home/ipausers/bisot/data_migrater/scripts/dbx_download.sh {j}'
+    for ind,row_ids in data_migration.iterrows():
+        unid = row_ids["OLD_UI"]
+        print(unid)
+        command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
         try:
             subprocess.run(command, shell=True, check=True)
             print("Command executed successfully!")
@@ -102,7 +104,8 @@ async def main(directory):
         update_plate_info(directory)
         run_info = get_current_folders(directory)
         new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
-
+        new_rows = new_rows.sort_values(by = 'datetime')
+        new_rows = new_rows.sort_values(by = 'unique_id')
         client = redis.from_url(REDIS_DSN)
         async with client:
             pong = await client.ping()
