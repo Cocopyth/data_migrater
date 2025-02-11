@@ -33,7 +33,7 @@ for SELECTED_FOLDER in "$@"; do
     TEMP_DIR="/mnt/sun-temp/TEMP/temp/"  # Temporary directory for intermediate download
 
     # Copy the folder into the temporary directory
-    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR" --progress
+    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR"
 
     if [ $? -eq 0 ]; then
         echo "Successfully downloaded: $SELECTED_FOLDER"
