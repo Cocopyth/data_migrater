@@ -89,6 +89,7 @@ async def main(directory):
 
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
+        print(processed_rows['unique_id'].unique())
         if unid not in processed_rows['unique_id'].unique():
             print(unid)
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
