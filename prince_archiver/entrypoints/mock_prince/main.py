@@ -86,12 +86,9 @@ def _create_event(row) -> NewImagingEvent:
 async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
-    print(processed_rows)
-
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
         if row_ids["UI"] not in processed_rows['unique_id'].unique():
-            print(unid)
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
                 subprocess.run(command, shell=True, check=True)
