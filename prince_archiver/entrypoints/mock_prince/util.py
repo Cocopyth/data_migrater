@@ -181,7 +181,7 @@ PROCESSED_ROWS_FILE = os.path.join(temp_path,"processed_rows.csv")
 def load_processed_rows():
     if os.path.exists(PROCESSED_ROWS_FILE):
         return pd.read_csv(PROCESSED_ROWS_FILE)
-    return pd.DataFrame(columns=["unique_id","folder","datetime"])
+    return pd.DataFrame(columns=["unique_id","old_id","folder","datetime"])
 
 def save_processed_rows(processed_rows):
     processed_rows.to_csv(PROCESSED_ROWS_FILE, index=False)

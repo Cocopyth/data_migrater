@@ -86,11 +86,11 @@ def _create_event(row) -> NewImagingEvent:
 async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
+    print(processed_rows)
 
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
-        print(processed_rows['unique_id'].unique())
-        if unid not in processed_rows['unique_id'].unique():
+        if row_ids["UI"] not in processed_rows['unique_id'].unique():
             print(unid)
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
@@ -121,6 +121,8 @@ async def main(directory):
                     old_id = row['unique_id']
                     if old_id in id_mapping:
                         row['unique_id'] = id_mapping[old_id]
+                        row['old_id'] = old_id
+
                     meta = _create_event(row)
                     logging.info(("posting", meta.ref_id))
                     await stream.add(Message(meta))
