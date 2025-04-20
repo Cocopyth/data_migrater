@@ -86,6 +86,7 @@ def _create_event(row) -> NewImagingEvent:
 async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
+    print(processed_rows['unique_id'].unique())
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
         if row_ids["UI"] not in processed_rows['unique_id'].unique():
