@@ -79,7 +79,7 @@ def _create_event(row) -> NewImagingEvent:
         },
         video={
             "duration": int(row["Time"].split()[0]),
-            "location": [float(row["X"]), float(row["Y"]), float(row["Z"])],
+            "location": [float(row["X"].split()[0]), float(row["Y"].split()[0]), float(row["Z"]).split()[0]],
             "magnification": magnification,
             "type": video_type,
         },
