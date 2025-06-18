@@ -213,7 +213,7 @@ def load_processed_rows():
     if os.path.exists(PROCESSED_ROWS_FILE):
         return pd.read_csv(PROCESSED_ROWS_FILE)
     print("creating file")
-    return pd.DataFrame(columns=["folder","old_id","Morrison_id"])
+    return pd.DataFrame(columns=["folder","old_id","Morrison_id","DateTime"])
 
 def save_processed_rows(processed_rows):
     processed_rows.to_csv(PROCESSED_ROWS_FILE, index=False)
