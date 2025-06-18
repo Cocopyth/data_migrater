@@ -11,7 +11,7 @@ fi
 
 # Variables
 REMOTE_PATH="shimizudbx:/DATA/CocoTransport" # Replace with your rclone path
-LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA/"
+LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA_VIDEO/"
 
 # Ensure local destination directory exists
 mkdir -p "$LOCAL_DEST"
