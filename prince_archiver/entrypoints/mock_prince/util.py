@@ -176,7 +176,7 @@ def find_max_row_col(directory):
 
     return k,(max_xx, max_yy)
 
-PROCESSED_ROWS_FILE = os.path.join(temp_path,"processed_rows.csv")
+PROCESSED_ROWS_FILE = os.path.join(temp_path,"processed_rows_video.csv")
 
 def load_processed_rows():
     if os.path.exists(PROCESSED_ROWS_FILE):

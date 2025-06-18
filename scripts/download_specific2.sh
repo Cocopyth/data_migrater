@@ -10,7 +10,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Variables
-REMOTE_PATH="shimizudbx:/DATA/PRINCE" # Replace with your rclone path
+REMOTE_PATH="shimizudbx:/DATA/CocoTransport" # Replace with your rclone path
 LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA/"
 
 # Ensure local destination directory exists

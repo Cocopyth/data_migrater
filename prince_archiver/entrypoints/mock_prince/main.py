@@ -24,7 +24,7 @@ LOGGER = logging.getLogger(__name__)
 REDIS_DSN = "redis://tsu-dsk001.ipa.amolf.nl:6380"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the script's directory
-file_path = os.path.join(script_dir, "2025_DataMigration.xlsx")
+file_path = os.path.join(script_dir, "2025_DataMigration_video.xlsx")
 data_migration = pd.read_excel(file_path)
 
 # Create a mapping dictionary from OLD_UI to UI
@@ -88,7 +88,7 @@ async def main(directory):
     processed_rows = load_processed_rows()
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
-        if row_ids["UI"] not in processed_rows['unique_id'].unique():
+        if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
                 subprocess.run(command, shell=True, check=True)
