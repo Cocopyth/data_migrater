@@ -33,7 +33,6 @@ id_mapping = dict(zip(data_migration['OLD_UI'], data_migration['UI']))
 
 # Run the command
 
-
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
     date_str= row["DateTime"]
@@ -69,20 +68,17 @@ def _create_event(row) -> NewImagingEvent:
             "camera": {
                 "model": row["Model"],
                 "exposure_time": row["ExposureTime"],
-                "frame_rate": row["FrameRate"],
+                "frame_rate": float(row["FrameRate"].split(" ")[0]),
                 "frame_size": row["FrameSize"],
                 "binning": row["Binning"],
                 "gain": row["Gain"],
                 "gamma": row["Gamma"],
                 "intensity": [0],
-                "bits_per_pixel": 8,
                 "Operation": row["Operation"]
             },
-            "position": {
-                "X": row["X"],
-                "Y": row["Y"],
-                "Z": row["Z"],
-
+            "video": {
+                "location": [row["X"],row["Y"],row["Z"]],
+                "duration": int(row["Time"].split(" ")[0]),
             },
         },
         local_path=f"Images/{row['folder']}/Img",
@@ -97,7 +93,7 @@ async def main(directory):
         if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
-                subprocess.run(command, shell=True, check=True)
+                # subprocess.run(command, shell=True, check=True)
                 print("Command executed successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with error: {e}")
