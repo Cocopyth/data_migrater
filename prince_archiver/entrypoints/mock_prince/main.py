@@ -20,7 +20,7 @@ from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
     load_processed_rows, save_processed_rows, build_video_info_dataframe, parse_exposure_time, parse_frame_size, \
-    extract_magnification_and_type
+    extract_magnification_and_type, extract_img_count
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ def _create_event(row) -> NewImagingEvent:
         experiment_id=row["unique_id"],
         timestamp=timestamp,
         type=EventType.VIDEO,
-        img_count=200,  # placeholder; ideally extract from "Frames Recorded"
+        img_count=extract_img_count(row["Frames Recorded"]),  # placeholder; ideally extract from "Frames Recorded"
         system="tsu-exp002",
         metadata=metadata,
         local_path=f"Images/{row['folder']}/Img"
@@ -105,7 +105,7 @@ async def main(directory):
         if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
-                # subprocess.run(command, shell=True, check=True)
+                subprocess.run(command, shell=True, check=True)
                 print("Command executed successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with error: {e}")
@@ -116,6 +116,7 @@ async def main(directory):
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(directory)
             if len(run_info)>0:
+                # new_rows = run_info #Test mode
                 new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
                 new_rows = new_rows.sort_values(by = 'DateTime')
                 client = redis.from_url(REDIS_DSN)
