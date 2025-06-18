@@ -102,8 +102,9 @@ async def main(directory):
     processed_rows = load_processed_rows()
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["UI"]
+        mor_id = row_ids["Morrison_id"]
         if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
-            command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
+            command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {mor_id}'
             try:
                 subprocess.run(command, shell=True, check=True)
                 print("Command executed successfully!")
