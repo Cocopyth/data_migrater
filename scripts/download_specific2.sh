@@ -15,8 +15,8 @@ TEMP_DIR="/mnt/sun-temp/TEMP/rclone_temp"
 mkdir -p "$LOCAL_DEST" "$TEMP_DIR"
 
 # Cleanup old files
-echo "Removing files and directories older than 2 days in $LOCAL_DEST..."
-find "$LOCAL_DEST" -mindepth 1 -ctime +2 -exec rm -rf {} +
+#echo "Removing files and directories older than 2 days in $LOCAL_DEST..."
+#find "$LOCAL_DEST" -mindepth 1 -ctime +2 -exec rm -rf {} +
 
 # Loop through each selected folder
 for SELECTED_FOLDER in "$@"; do
