@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# To set up rclone, follow instructions at https://rclone.org/dropbox/
-
 # Check if at least one folder name is provided
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <folder1> [folder2] [folder3] ..."
@@ -10,7 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Variables
-REMOTE_PATH="shimizudbx:/DATA/CocoTransport" # Replace with your rclone path
+REMOTE_PATH="shimizudbx:/DATA/CocoTransport"
 LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA_VIDEO/"
 
 # Ensure local destination directory exists
@@ -28,47 +26,21 @@ for SELECTED_FOLDER in "$@"; do
         continue
     fi
 
-    # Download the selected folder and manually flatten the structure
-    echo "Downloading and flattening folder: $SELECTED_FOLDER"
-    TEMP_DIR="/mnt/sun-temp/TEMP/temp/"  # Temporary directory for intermediate download
+    # Create a unique destination name
+    UNIQUE_ID=$(date +%s%N)
+    DEST_FOLDER="${LOCAL_DEST}/${SELECTED_FOLDER}_${UNIQUE_ID}"
 
-    # Copy the folder into the temporary directory
-    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR"
+    # Download directly to the unique local folder
+    echo "Downloading to $DEST_FOLDER..."
+    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$DEST_FOLDER"
 
     if [ $? -eq 0 ]; then
-        echo "Successfully downloaded: $SELECTED_FOLDER"
-
-        # Move files and subdirectories from TEMP_DIR to LOCAL_DEST (flattening the structure)
-        find "$TEMP_DIR" -mindepth 1 -maxdepth 1 -exec mv -t "$LOCAL_DEST" {} +
-
-        # Clean up the temporary directory
-        rm -rf "$TEMP_DIR"
+        echo "Successfully downloaded: $SELECTED_FOLDER to $DEST_FOLDER"
     else
         echo "Error downloading: $SELECTED_FOLDER"
-        rm -rf "$TEMP_DIR"  # Clean up in case of error
+        rm -rf "$DEST_FOLDER"  # Clean up in case of error
         continue
     fi
-
-    # Unzip files and maintain the correct structure
-    echo "Checking for zipped files in $LOCAL_DEST..."
-    find "$LOCAL_DEST" -type f -name "*.zip" | while read -r zip_file; do
-      # Get the directory containing the .zip file
-      parent_dir=$(dirname "$zip_file")
-
-      # Get the base name of the .zip file (without extension)
-      folder_name=$(basename "$zip_file" .zip)
-
-      # Create the extraction directory
-      extract_dir="$parent_dir/$folder_name"
-      mkdir -p "$extract_dir"
-
-      # Extract the .zip file into the corresponding folder
-      unzip -q "$zip_file" -d "$extract_dir"
-      rm "$zip_file"
-      echo "Extracted $zip_file to $extract_dir"
-    done
-
-    echo "Folder $SELECTED_FOLDER processed with flattened structure!"
 done
 
 echo "All specified folders processed."
