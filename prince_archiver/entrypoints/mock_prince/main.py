@@ -17,7 +17,7 @@ from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
-    load_processed_rows, save_processed_rows
+    load_processed_rows, save_processed_rows, build_video_info_dataframe
 
 LOGGER = logging.getLogger(__name__)
 
@@ -100,10 +100,9 @@ async def main(directory):
             logging.info("Starting up mock prince")
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
-            update_plate_info(directory)
-            run_info = get_current_folders(directory)
+            run_info = build_video_info_dataframe(directory)
             if len(run_info)>0:
-                new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
+                new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
                 new_rows = new_rows.sort_values(by = 'datetime')
                 new_rows = new_rows.sort_values(by = 'unique_id')
                 client = redis.from_url(REDIS_DSN)

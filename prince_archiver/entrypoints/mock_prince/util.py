@@ -145,6 +145,36 @@ def get_current_folders(
         return plate_info
 
 
+def parse_video_info(filepath):
+    """Parses a single videoInfo.txt file into a dictionary."""
+    info = {}
+    with open(filepath, 'r', encoding='utf-8') as file:
+        for line in file:
+            # Ignore lines that are just dashes or blank
+            if line.strip() == '' or set(line.strip()) == {'-'}:
+                continue
+            if ':' in line:
+                key, value = line.split(':', 1)
+                info[key.strip()] = value.strip()
+    return info
+
+def build_video_info_dataframe(root_dir):
+    """
+    Walks through all subdirectories of root_dir to find videoInfo.txt files,
+    parses them, and returns a DataFrame with one row per file.
+    """
+    records = []
+
+    for dirpath, _, filenames in os.walk(root_dir):
+        if 'videoInfo.txt' in filenames:
+            full_path = os.path.join(dirpath, 'videoInfo.txt')
+            folder_name = os.path.basename(os.path.dirname(full_path))
+            record = parse_video_info(full_path)
+            record['folder_id'] = folder_name
+            records.append(record)
+
+    return pd.DataFrame(records)
+
 def find_max_row_col(directory):
     """
     Finds the maximum row (yy) and column (xx) values from filenames in the specified directory.
