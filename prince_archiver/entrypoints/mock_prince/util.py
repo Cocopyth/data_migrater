@@ -170,7 +170,8 @@ def build_video_info_dataframe(root_dir):
             full_path = os.path.join(dirpath, 'videoInfo.txt')
             folder_name = os.path.basename(os.path.dirname(full_path))
             record = parse_video_info(full_path)
-            record['folder_id'] = folder_name
+            record['folder'] = folder_name
+            record['total_path'] = os.path.join(root_dir,folder_name)
             records.append(record)
 
     return pd.DataFrame(records)

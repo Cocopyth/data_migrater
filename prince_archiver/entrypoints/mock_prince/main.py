@@ -4,6 +4,7 @@ from uuid import uuid4
 import sys
 import subprocess
 import os
+from datetime import datetime
 
 import pandas as pd
 import pytz
@@ -35,10 +36,14 @@ id_mapping = dict(zip(data_migration['OLD_UI'], data_migration['UI']))
 
 def _create_event(row) -> NewImagingEvent:
     ref_id = uuid4()
-    timestamp = row["datetime"]
-    img_path = os.path.join(row["total_path"],"Img")
-    img_count,grid_size = find_max_row_col(img_path)
+    date_str= row["DateTime"]
     # Convert the timestamp to a naive datetime
+    dt_obj = datetime.strptime(date_str, "%A, %d %B %Y, %H:%M:%S")
+
+    # Optionally convert to pandas.Timestamp
+    timestamp = pd.to_datetime(dt_obj)
+
+    # Convert to naive Python datetime object
     naive_timestamp = timestamp.to_pydatetime()
 
     # Define the Amsterdam timezone
@@ -53,30 +58,31 @@ def _create_event(row) -> NewImagingEvent:
         ref_id=ref_id,
         experiment_id=row["unique_id"],
         timestamp=timestamp,
-        type=EventType.STITCH,
+        type=EventType.VIDEO,
         system="tsu-exp002",
-        img_count=img_count,
         metadata={
             "application": {
-                "application": "mock-prince",
+                "application": "mock-morrison",
                 "version": "v0.1.0",
                 "user": "mock-user",
             },
             "camera": {
-                "model": "Basler acA4112-20um SN:40193936",
-                "station_name": f"#{row['PrincePos']}",
-                "exposure_time": 0.1,
-                "frame_rate": None,
-                "frame_size": (4096, 3000),
-                "binning": "1x1",
-                "gain": 0.0,
-                "gamma": 1,
+                "model": row["Model"],
+                "exposure_time": row["ExposureTime"],
+                "frame_rate": row["FrameRate"],
+                "frame_size": row["FrameSize"],
+                "binning": row["Binning"],
+                "gain": row["Gain"],
+                "gamma": row["Gamma"],
                 "intensity": [0],
                 "bits_per_pixel": 8,
+                "Operation": row["Operation"]
             },
-            "stitching": {
-                "last_focused_at": None,
-                "grid_size": grid_size,
+            "position": {
+                "X": row["X"],
+                "Y": row["Y"],
+                "Z": row["Z"],
+
             },
         },
         local_path=f"Images/{row['folder']}/Img",
@@ -87,7 +93,7 @@ async def main(directory):
     """Add new timestep directory every minute."""
     processed_rows = load_processed_rows()
     for ind,row_ids in data_migration.iterrows():
-        unid = row_ids["OLD_UI"]
+        unid = row_ids["UI"]
         if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
             try:
@@ -103,8 +109,7 @@ async def main(directory):
             run_info = build_video_info_dataframe(directory)
             if len(run_info)>0:
                 new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
-                new_rows = new_rows.sort_values(by = 'datetime')
-                new_rows = new_rows.sort_values(by = 'unique_id')
+                new_rows = new_rows.sort_values(by = 'DateTime')
                 client = redis.from_url(REDIS_DSN)
                 async with client:
                     pong = await client.ping()
@@ -115,11 +120,7 @@ async def main(directory):
                 async with client:
                     stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
                     for index, row in new_rows.iterrows():
-                        old_id = row['unique_id']
-                        if old_id in id_mapping:
-                            row['unique_id'] = id_mapping[old_id]
-                            row['old_id'] = old_id
-
+                        row['unique_id'] = unid
                         meta = _create_event(row)
                         logging.info(("posting", meta.ref_id))
                         await stream.add(Message(meta))
