@@ -8,7 +8,7 @@ fi
 
 # Variables
 REMOTE_PATH="shimizudbx:/DATA/CocoTransport"
-LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA_VIDEO/"
+LOCAL_DEST="/mnt/sun-temp/TEMP/MOCK_ARETHA/"
 TEMP_DIR="/mnt/sun-temp/TEMP/rclone_temp"
 
 # Ensure local destination directories exist
