@@ -217,3 +217,29 @@ def load_processed_rows():
 
 def save_processed_rows(processed_rows):
     processed_rows.to_csv(PROCESSED_ROWS_FILE, index=False)
+
+def extract_img_count(value):
+    """Extracts the number of frames recorded from a string like '200/200'."""
+    if isinstance(value, str):
+        try:
+            return int(value.split("/")[0])
+        except (ValueError, IndexError):
+            return None
+    return None
+
+def parse_exposure_time(value):
+    """Extract float from string like '50000.0 µs'"""
+    return float(value.split()[0])
+
+def parse_frame_size(value):
+    """Extract tuple from string like '2048x1500 8BPP'"""
+    match = re.match(r"(\d+)x(\d+)", value)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+    return None
+
+def extract_magnification_and_type(op_str):
+    match = re.match(r"(\d+(?:\.\d+)?)x\s+(.+)", op_str, re.IGNORECASE)
+    if match:
+        return float(match.group(1)), match.group(2).strip().lower()
+    return None, None

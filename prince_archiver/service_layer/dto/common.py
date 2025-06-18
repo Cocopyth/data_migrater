@@ -44,7 +44,6 @@ class Metadata(BaseModel):
     camera: Camera
     stitching: Stitching | None = None
 
-
 class SrcDirInfo(BaseModel):
     local_path: Path
     img_count: int

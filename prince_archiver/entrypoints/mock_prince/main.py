@@ -15,10 +15,12 @@ from prince_archiver.adapters.streams import Stream
 from prince_archiver.definitions import EventType
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.dto import NewImagingEvent
+from prince_archiver.service_layer.dto.common import Metadata
 from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
-    load_processed_rows, save_processed_rows, build_video_info_dataframe
+    load_processed_rows, save_processed_rows, build_video_info_dataframe, parse_exposure_time, parse_frame_size, \
+    extract_magnification_and_type
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,35 +55,45 @@ def _create_event(row) -> NewImagingEvent:
 
     # Use the aware_timestamp in your NewImagingEvent
     timestamp = aware_timestamp
+    exposure_time = parse_exposure_time(row["ExposureTime"])
+    frame_size = parse_frame_size(row["FrameSize"])
+    magnification, video_type = extract_magnification_and_type(row.get("Operation", ""))
+
+    metadata = Metadata(
+        application={
+            "application": "mock-morrison",
+            "version": "v0.1.0",
+            "user": "mock-user",
+        },
+        camera={
+            "model": row["Model"],
+            "station_name": row.get("StationName", "Unknown"),
+            "exposure_time": exposure_time,
+            "frame_rate": float(row["FrameRate"].split()[0]),
+            "frame_size": frame_size,
+            "bits_per_pixel": 8,  # hardcoded; adjust if needed
+            "binning": row["Binning"],
+            "gain": float(row["Gain"]),
+            "gamma": float(row["Gamma"]),
+            "intensity": [0],  # Placeholder; use real values if available
+        },
+        video={
+            "duration": int(row["Time"].split()[0]),
+            "location": [float(row["X"]), float(row["Y"]), float(row["Z"])],
+            "magnification": magnification,
+            "type": video_type,
+        },
+    )
+
     return NewImagingEvent(
         ref_id=ref_id,
         experiment_id=row["unique_id"],
         timestamp=timestamp,
         type=EventType.VIDEO,
+        img_count=200,  # placeholder; ideally extract from "Frames Recorded"
         system="tsu-exp002",
-        metadata={
-            "application": {
-                "application": "mock-morrison",
-                "version": "v0.1.0",
-                "user": "mock-user",
-            },
-            "camera": {
-                "model": row["Model"],
-                "exposure_time": row["ExposureTime"],
-                "frame_rate": float(row["FrameRate"].split(" ")[0]),
-                "frame_size": row["FrameSize"],
-                "binning": row["Binning"],
-                "gain": row["Gain"],
-                "gamma": row["Gamma"],
-                "intensity": [0],
-                "Operation": row["Operation"]
-            },
-            "video": {
-                "location": [row["X"],row["Y"],row["Z"]],
-                "duration": int(row["Time"].split(" ")[0]),
-            },
-        },
-        local_path=f"Images/{row['folder']}/Img",
+        metadata=metadata,
+        local_path=f"Images/{row['folder']}/Img"
     )
 
 
