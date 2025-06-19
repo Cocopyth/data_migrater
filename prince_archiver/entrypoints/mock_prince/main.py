@@ -104,6 +104,7 @@ async def main(directory):
         unid = row_ids["UI"]
         mor_id = row_ids["Morrison_id"]
         if row_ids["Morrison_id"] not in processed_rows['Morrison_id'].unique():
+            # This currently doesn't work because Morrison id is not correctly set by build_video_info_dataframe
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {mor_id}'
             try:
                 subprocess.run(command, shell=True, check=True)
