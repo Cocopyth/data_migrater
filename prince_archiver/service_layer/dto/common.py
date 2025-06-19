@@ -35,13 +35,19 @@ class Camera(BaseModel):
 
 
 class Stitching(BaseModel):
+    duration: int
+    location: tuple[float, float, float]
+    magnification: str
+    type: str
+
+class Video(BaseModel):
     last_focused_at: datetime | None
     grid_size: tuple[int, int]
-
 
 class Metadata(BaseModel):
     application: Application
     camera: Camera
+    video: Video
     stitching: Stitching | None = None
 
 class SrcDirInfo(BaseModel):
