@@ -41,7 +41,7 @@ class Stitching(BaseModel):
 class Video(BaseModel):
     duration: int
     location: tuple[float, float, float]
-    magnification: str
+    magnification: float
     type: str
 
 class Metadata(BaseModel):
