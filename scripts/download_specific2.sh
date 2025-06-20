@@ -33,7 +33,7 @@ for SELECTED_FOLDER in "$@"; do
 
     # rclone copy to temp directory
     echo "Downloading $SELECTED_FOLDER to temporary location..."
-    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR/$SELECTED_FOLDER"
+    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$LOCAL_DEST/$SELECTED_FOLDER"
 done
 
 echo "All specified folders processed."
