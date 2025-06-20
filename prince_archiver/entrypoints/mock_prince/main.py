@@ -89,7 +89,7 @@ def _create_event(row) -> NewImagingEvent:
 
     return NewImagingEvent(
         ref_id=ref_id,
-        experiment_id=row["unique_id"],
+        experiment_id=row["new_ui"],
         timestamp=timestamp,
         type=EventType.VIDEO,
         img_count=extract_img_count(row["Frames Recorded"]),  # placeholder; ideally extract from "Frames Recorded"
@@ -122,7 +122,7 @@ async def main(directory):
             run_info["DateOnly"] = run_info["DateTime"].apply(
                 lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
             )
-            run_info["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateOnly']}", axis=1)  # You define this
+            run_info["old_ui"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateOnly']}", axis=1)  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
@@ -138,7 +138,7 @@ async def main(directory):
                 async with client:
                     stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
                     for index, row in new_rows.iterrows():
-                        row['unique_id'] = unid
+                        row['new_ui'] = id_mapping[row['old_ui']]
                         meta = _create_event(row)
                         logging.info(("posting", meta.ref_id))
                         await stream.add(Message(meta))
