@@ -124,7 +124,7 @@ async def main(directory):
             )
             run_info["Plate"] = run_info["Plate"].apply(clean_plate_to_int)
             # print(run_info["Plate"].unique())
-            # run_info["old_ui"] = run_info.apply(lambda row: f"{int(row['Plate'])}_{row['DateOnly']}", axis=1)  # You define this
+            run_info["mor_id"] = mor_id  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
