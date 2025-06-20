@@ -7,6 +7,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytz
 from tqdm.autonotebook import tqdm
 
 
@@ -176,6 +177,28 @@ def build_video_info_dataframe(root_dir):
 
     return pd.DataFrame(records)
 
+
+def process_dataframe_with_video_nr(df):
+    # Convert 'DateTime' string to timezone-aware datetime in Amsterdam
+    amsterdam_timezone = pytz.timezone("Europe/Amsterdam")
+    df["datetime_obj"] = df["DateTime"].apply(
+        lambda x: amsterdam_timezone.localize(datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S"))
+    )
+
+    # Create a date-only column to group by day
+    df["date_only"] = df["datetime_obj"].dt.date
+
+    # Sort by datetime just in case
+    df.sort_values(by=["unique_id", "date_only", "datetime_obj"], inplace=True)
+
+    # Assign video_nr per unique_id and per day
+    df["video_nr"] = (
+            df.groupby(["unique_id", "date_only"])
+            .cumcount() + 1
+    )
+
+    return df
+
 def find_max_row_col(directory):
     """
     Finds the maximum row (yy) and column (xx) values from filenames in the specified directory.
@@ -241,5 +264,5 @@ def parse_frame_size(value):
 def extract_magnification_and_type(op_str):
     match = re.match(r"(\d+(?:\.\d+)?)x\s+(.+)", op_str, re.IGNORECASE)
     if match:
-        return int(match.group(1)), match.group(2).strip().lower()
+        return float(match.group(1)), match.group(2).strip().lower()
     return None, None

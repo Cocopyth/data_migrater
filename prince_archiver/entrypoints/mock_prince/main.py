@@ -20,7 +20,7 @@ from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
     load_processed_rows, save_processed_rows, build_video_info_dataframe, parse_exposure_time, parse_frame_size, \
-    extract_magnification_and_type, extract_img_count
+    extract_magnification_and_type, extract_img_count, process_dataframe_with_video_nr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,6 +82,7 @@ def _create_event(row) -> NewImagingEvent:
             "location": [float(row["X"].split()[0]), float(row["Y"].split()[0]), float(row["Z"].split()[0])],
             "magnification": magnification,
             "type": video_type,
+            "video_nr": row["video_nr"],
         },
     )
 
@@ -117,6 +118,8 @@ async def main(directory):
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(directory)
+            df["unique_id"] = df.apply(lambda row: f"{row['Plate']}_{row['DateTime']}", axis=1)  # You define this
+            df = process_dataframe_with_video_nr(df)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
                 new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
