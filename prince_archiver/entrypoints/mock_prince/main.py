@@ -122,7 +122,7 @@ async def main(directory):
             run_info["DateOnly"] = run_info["DateTime"].apply(
                 lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
             )
-            run_info["old_ui"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateOnly']}", axis=1)  # You define this
+            run_info["old_ui"] = run_info.apply(lambda row: f"{int(row['Plate'])}_{row['DateOnly']}", axis=1)  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
