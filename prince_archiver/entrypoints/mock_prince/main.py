@@ -95,7 +95,7 @@ def _create_event(row) -> NewImagingEvent:
         img_count=extract_img_count(row["Frames Recorded"]),  # placeholder; ideally extract from "Frames Recorded"
         system="tsu-exp002",
         metadata=metadata,
-        local_path=f"Images/{row['Morrison_id']}/{row['folder']}/Img"
+        local_path=f"Images/{row['mor_id']}/{row['folder']}/Img"
     )
 
 
