@@ -47,7 +47,7 @@ class Video(BaseModel):
 class Metadata(BaseModel):
     application: Application
     camera: Camera
-    video: Video
+    video: Video | None = None
     stitching: Stitching | None = None
 
 class SrcDirInfo(BaseModel):

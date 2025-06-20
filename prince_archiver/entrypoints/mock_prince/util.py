@@ -241,5 +241,5 @@ def parse_frame_size(value):
 def extract_magnification_and_type(op_str):
     match = re.match(r"(\d+(?:\.\d+)?)x\s+(.+)", op_str, re.IGNORECASE)
     if match:
-        return float(match.group(1)), match.group(2).strip().lower()
+        return int(match.group(1)), match.group(2).strip().lower()
     return None, None
