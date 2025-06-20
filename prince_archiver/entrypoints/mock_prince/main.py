@@ -120,7 +120,7 @@ async def main(directory):
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(directory)
             run_info["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateTime']}", axis=1)  # You define this
-            df = process_dataframe_with_video_nr(df)
+            run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
                 new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
