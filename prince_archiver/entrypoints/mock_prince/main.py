@@ -119,7 +119,7 @@ async def main(directory):
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(directory)
-            df["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateTime']}", axis=1)  # You define this
+            run_info["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateTime']}", axis=1)  # You define this
             df = process_dataframe_with_video_nr(df)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
