@@ -76,6 +76,7 @@ def _create_event(row) -> NewImagingEvent:
             "gain": float(row["Gain"]),
             "gamma": float(row["Gamma"]),
             "intensity": [0],  # Placeholder; use real values if available
+            "pixel_size": 1.725
         },
         video={
             "duration": int(row["Time"].split()[0]),
