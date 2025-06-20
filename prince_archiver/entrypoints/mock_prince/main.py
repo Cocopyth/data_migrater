@@ -119,10 +119,10 @@ async def main(directory):
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(directory)
-            date_str = row["DateTime"]
-            dt_obj = datetime.strptime(date_str, "%A, %d %B %Y, %H:%M:%S")
-            formatted_date = dt_obj.strftime("%Y%m%d")
-            run_info["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{formatted_date}", axis=1)  # You define this
+            run_info["DateOnly"] = run_info["DateTime"].apply(
+                lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
+            )
+            run_info["unique_id"] = run_info.apply(lambda row: f"{row['Plate']}_{row['DateOnly']}", axis=1)  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
