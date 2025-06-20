@@ -189,11 +189,11 @@ def process_dataframe_with_video_nr(df):
     df["date_only"] = df["datetime_obj"].dt.date
 
     # Sort by datetime just in case
-    df.sort_values(by=["old_ui", "date_only", "datetime_obj"], inplace=True)
+    df.sort_values(by=["mor_id", "date_only", "datetime_obj"], inplace=True)
 
     # Assign video_nr per unique_id and per day
     df["video_nr"] = (
-            df.groupby(["old_ui", "date_only"])
+            df.groupby(["mor_id"])
             .cumcount() + 1
     )
 
