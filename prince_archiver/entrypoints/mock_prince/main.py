@@ -20,7 +20,7 @@ from prince_archiver.service_layer.streams import Message
 
 from prince_archiver.entrypoints.mock_prince.util import update_plate_info, get_current_folders, find_max_row_col, \
     load_processed_rows, save_processed_rows, build_video_info_dataframe, parse_exposure_time, parse_frame_size, \
-    extract_magnification_and_type, extract_img_count, process_dataframe_with_video_nr
+    extract_magnification_and_type, extract_img_count, process_dataframe_with_video_nr, clean_plate_to_int
 
 LOGGER = logging.getLogger(__name__)
 
@@ -122,7 +122,8 @@ async def main(directory):
             run_info["DateOnly"] = run_info["DateTime"].apply(
                 lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
             )
-            print(run_info["Plate"].unique())
+            run_info["Plate"] = run_info["Plate"].apply(clean_plate_to_int)
+            # print(run_info["Plate"].unique())
             run_info["old_ui"] = run_info.apply(lambda row: f"{int(row['Plate'])}_{row['DateOnly']}", axis=1)  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:

@@ -266,3 +266,9 @@ def extract_magnification_and_type(op_str):
     if match:
         return float(match.group(1)), match.group(2).strip().lower()
     return None, None
+
+def clean_plate_to_int(plate_str):
+    match = re.search(r'\d+', str(plate_str))
+    if match:
+        return int(match.group())
+    return None  # or raise an error / use a sentinel like -1 if needed
