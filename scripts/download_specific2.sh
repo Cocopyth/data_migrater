@@ -33,22 +33,7 @@ for SELECTED_FOLDER in "$@"; do
 
     # rclone copy to temp directory
     echo "Downloading $SELECTED_FOLDER to temporary location..."
-    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR"
-
-    if [ $? -ne 0 ]; then
-        echo "Error downloading: $SELECTED_FOLDER"
-        continue
-    fi
-
-    # Move each top-level subfolder to LOCAL_DEST and rename with unique timestamp
-    for SUBFOLDER in "$TEMP_DIR"/*; do
-        if [ -d "$SUBFOLDER" ]; then
-            TIMESTAMP=$(date +%d_%H%M%S%3N)
-            DEST_FOLDER="$LOCAL_DEST/$TIMESTAMP"
-            mv "$SUBFOLDER" "$DEST_FOLDER"
-            echo "Moved $(basename "$SUBFOLDER") to $DEST_FOLDER"
-        fi
-    done
+    rclone copy "$REMOTE_PATH/$SELECTED_FOLDER" "$TEMP_DIR/$SELECTED_FOLDER"
 done
 
 echo "All specified folders processed."

@@ -95,7 +95,7 @@ def _create_event(row) -> NewImagingEvent:
         img_count=extract_img_count(row["Frames Recorded"]),  # placeholder; ideally extract from "Frames Recorded"
         system="tsu-exp002",
         metadata=metadata,
-        local_path=f"Images/{row['folder']}/Img"
+        local_path=f"Images/{row['Morrison_id']}/{row['folder']}/Img"
     )
 
 
@@ -109,7 +109,7 @@ async def main(directory):
             # This currently doesn't work because Morrison id is not correctly set by build_video_info_dataframe
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {mor_id}'
             try:
-                # subprocess.run(command, shell=True, check=True)
+                subprocess.run(command, shell=True, check=True)
                 print("Command executed successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with error: {e}")
@@ -118,13 +118,13 @@ async def main(directory):
             logging.info("Starting up mock prince")
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
-            run_info = build_video_info_dataframe(directory)
+            run_info = build_video_info_dataframe(os.path.join(directory,mor_id))
             run_info["DateOnly"] = run_info["DateTime"].apply(
                 lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
             )
             run_info["Plate"] = run_info["Plate"].apply(clean_plate_to_int)
             # print(run_info["Plate"].unique())
-            run_info["old_ui"] = run_info.apply(lambda row: f"{int(row['Plate'])}_{row['DateOnly']}", axis=1)  # You define this
+            # run_info["old_ui"] = run_info.apply(lambda row: f"{int(row['Plate'])}_{row['DateOnly']}", axis=1)  # You define this
             run_info = process_dataframe_with_video_nr(run_info)
             if len(run_info)>0:
                 # new_rows = run_info #Test mode
@@ -140,7 +140,7 @@ async def main(directory):
                 async with client:
                     stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
                     for index, row in new_rows.iterrows():
-                        row['new_ui'] = id_mapping[row['old_ui']]
+                        row['new_ui'] = unid
                         meta = _create_event(row)
                         logging.info(("posting", meta.ref_id))
                         await stream.add(Message(meta))
