@@ -109,7 +109,7 @@ async def main(directory):
             # This currently doesn't work because Morrison id is not correctly set by build_video_info_dataframe
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {mor_id}'
             try:
-                # subprocess.run(command, shell=True, check=True)
+                subprocess.run(command, shell=True, check=True)
                 print("Command executed successfully!")
             except subprocess.CalledProcessError as e:
                 print(f"Command failed with error: {e}")
