@@ -119,35 +119,36 @@ async def main(directory):
             logging.info(REDIS_DSN)
             # directory = "/dbx_copy/"
             run_info = build_video_info_dataframe(os.path.join(directory,mor_id))
-            run_info["DateOnly"] = run_info["DateTime"].apply(
-                lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
-            )
-            run_info["Plate"] = run_info["Plate"].apply(clean_plate_to_int)
-            # print(run_info["Plate"].unique())
-            run_info["mor_id"] = mor_id  # You define this
-            run_info = process_dataframe_with_video_nr(run_info)
-            if len(run_info)>0:
-                # new_rows = run_info #Test mode
-                new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
-                new_rows = new_rows.sort_values(by = 'DateTime')
-                client = redis.from_url(REDIS_DSN)
-                async with client:
-                    pong = await client.ping()
-                    if pong:
-                        logging.info("Successfully connected to Redis")
-                    else:
-                        logging.error("Redis connection failed")
-                async with client:
-                    stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
-                    for index, row in new_rows.iterrows():
-                        row['new_ui'] = unid
-                        meta = _create_event(row)
-                        logging.info(("posting", meta.ref_id))
-                        await stream.add(Message(meta))
-                        processed_rows = pd.concat([processed_rows, pd.DataFrame([row])], ignore_index=True)
-                        save_processed_rows(processed_rows)
-                        await asyncio.sleep(1)
-                    await asyncio.sleep(60)
+            if len(run_info):
+                run_info["DateOnly"] = run_info["DateTime"].apply(
+                    lambda x: datetime.strptime(x, "%A, %d %B %Y, %H:%M:%S").strftime("%Y%m%d")
+                )
+                run_info["Plate"] = run_info["Plate"].apply(clean_plate_to_int)
+                # print(run_info["Plate"].unique())
+                run_info["mor_id"] = mor_id  # You define this
+                run_info = process_dataframe_with_video_nr(run_info)
+                if len(run_info)>0:
+                    # new_rows = run_info #Test mode
+                    new_rows = run_info[~run_info["DateTime"].isin(processed_rows["DateTime"])]
+                    new_rows = new_rows.sort_values(by = 'DateTime')
+                    client = redis.from_url(REDIS_DSN)
+                    async with client:
+                        pong = await client.ping()
+                        if pong:
+                            logging.info("Successfully connected to Redis")
+                        else:
+                            logging.error("Redis connection failed")
+                    async with client:
+                        stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
+                        for index, row in new_rows.iterrows():
+                            row['new_ui'] = unid
+                            meta = _create_event(row)
+                            logging.info(("posting", meta.ref_id))
+                            await stream.add(Message(meta))
+                            processed_rows = pd.concat([processed_rows, pd.DataFrame([row])], ignore_index=True)
+                            save_processed_rows(processed_rows)
+                            await asyncio.sleep(1)
+                        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
