@@ -88,46 +88,46 @@ async def main(directory):
     processed_rows = load_processed_rows()
     for ind,row_ids in data_migration.iterrows():
         unid = row_ids["OLD_UI"]
-        if row_ids["UI"] not in processed_rows['unique_id'].unique():
-            command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
-            try:
-                subprocess.run(command, shell=True, check=True)
-                print("Command executed successfully!")
-            except subprocess.CalledProcessError as e:
-                print(f"Command failed with error: {e}")
-            configure_logging()
+        # if row_ids["UI"] not in processed_rows['unique_id'].unique():
+        command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
+        try:
+            subprocess.run(command, shell=True, check=True)
+            print("Command executed successfully!")
+        except subprocess.CalledProcessError as e:
+            print(f"Command failed with error: {e}")
+        configure_logging()
 
-            logging.info("Starting up mock prince")
-            logging.info(REDIS_DSN)
-            # directory = "/dbx_copy/"
-            update_plate_info(directory)
-            run_info = get_current_folders(directory)
-            if len(run_info)>0:
-                new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
-                new_rows = new_rows.sort_values(by = 'datetime')
-                new_rows = new_rows.sort_values(by = 'unique_id')
-                client = redis.from_url(REDIS_DSN)
-                async with client:
-                    pong = await client.ping()
-                    if pong:
-                        logging.info("Successfully connected to Redis")
-                    else:
-                        logging.error("Redis connection failed")
-                async with client:
-                    stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
-                    for index, row in new_rows.iterrows():
-                        old_id = row['unique_id']
-                        if old_id in id_mapping:
-                            row['unique_id'] = id_mapping[old_id]
-                            row['old_id'] = old_id
+        logging.info("Starting up mock prince")
+        logging.info(REDIS_DSN)
+        # directory = "/dbx_copy/"
+        update_plate_info(directory)
+        run_info = get_current_folders(directory)
+        if len(run_info)>0:
+            new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
+            new_rows = new_rows.sort_values(by = 'datetime')
+            new_rows = new_rows.sort_values(by = 'unique_id')
+            client = redis.from_url(REDIS_DSN)
+            async with client:
+                pong = await client.ping()
+                if pong:
+                    logging.info("Successfully connected to Redis")
+                else:
+                    logging.error("Redis connection failed")
+            async with client:
+                stream = Stream(name='dlm:new-imaging-event', redis=client,max_len = 10000)
+                for index, row in new_rows.iterrows():
+                    old_id = row['unique_id']
+                    if old_id in id_mapping:
+                        row['unique_id'] = id_mapping[old_id]
+                        row['old_id'] = old_id
 
-                        meta = _create_event(row)
-                        logging.info(("posting", meta.ref_id))
-                        await stream.add(Message(meta))
-                        processed_rows = pd.concat([processed_rows, pd.DataFrame([row])], ignore_index=True)
-                        save_processed_rows(processed_rows)
-                        await asyncio.sleep(1)
-                    await asyncio.sleep(60)
+                    meta = _create_event(row)
+                    logging.info(("posting", meta.ref_id))
+                    await stream.add(Message(meta))
+                    processed_rows = pd.concat([processed_rows, pd.DataFrame([row])], ignore_index=True)
+                    save_processed_rows(processed_rows)
+                    await asyncio.sleep(1)
+                await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
