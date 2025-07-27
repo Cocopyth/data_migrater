@@ -76,7 +76,7 @@ def update_plate_info(
                             os.path.join(path_snap, "Img", "Img_r03_c05.tif")
                         )
                         * len(sub_list_files)
-                        >= 100
+                        >= 10
                     )
                 if is_real_folder:
                     params = get_param(folder, directory)
