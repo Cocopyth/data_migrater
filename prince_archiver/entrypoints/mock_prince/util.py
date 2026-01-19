@@ -106,20 +106,28 @@ def get_data_info(local=False, suffix_data_info=""):
         data_info.index.name = "total_path"
         data_info.reset_index(inplace=True)
         data_info["Plate"] = data_info["Plate"].fillna(0)
-        print(data_info["Plate"].unique())
-        data_info["unique_id"] = (
+        plate_numeric = pd.to_numeric(
             data_info["Plate"]
             .astype(str)
-            .str.replace(r"\D", "", regex=True)
-            .astype(int)
-            .astype(str)
-            + "_"
-            + data_info["CrossDate"].str.replace("'", "").astype(str)
+            .str.replace(r"\D", "", regex=True),
+            errors="coerce"
+        )
+
+        mask = plate_numeric.notna()
+
+        data_info = data_info.loc[mask].copy()
+
+        data_info["unique_id"] = (
+                plate_numeric.loc[mask].astype(int).astype(str)
+                + "_"
+                + data_info.loc[mask, "CrossDate"].str.replace("'", "").astype(str)
         )
 
         data_info["datetime"] = pd.to_datetime(
             data_info["date"], format="%d.%m.%Y, %H:%M:"
         )
+    print(data_info["unique_id"].unique())
+
     return data_info
 
 
