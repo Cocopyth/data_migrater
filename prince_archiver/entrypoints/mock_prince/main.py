@@ -90,11 +90,11 @@ async def main(directory):
         unid = row_ids["OLD_UI"]
         if row_ids["UI"] not in processed_rows['unique_id'].unique():
             command = f'bash /home/ipausers/bisot/data_migrater/scripts/download_specific2.sh {unid}'
-            # try:
-            #     subprocess.run(command, shell=True, check=True)
-            #     print("Command executed successfully!")
-            # except subprocess.CalledProcessError as e:
-            #     print(f"Command failed with error: {e}")
+            try:
+                subprocess.run(command, shell=True, check=True)
+                print("Command executed successfully!")
+            except subprocess.CalledProcessError as e:
+                print(f"Command failed with error: {e}")
             configure_logging()
 
             logging.info("Starting up mock prince")
