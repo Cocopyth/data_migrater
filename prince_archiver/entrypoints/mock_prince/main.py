@@ -104,6 +104,7 @@ async def main(directory):
             run_info = get_current_folders(directory)
             if len(run_info)>0:
                 new_rows = run_info[~run_info["datetime"].isin(processed_rows["datetime"])]
+                print(new_rows)
                 new_rows = new_rows.sort_values(by = 'datetime')
                 new_rows = new_rows.sort_values(by = 'unique_id')
                 client = redis.from_url(REDIS_DSN)
