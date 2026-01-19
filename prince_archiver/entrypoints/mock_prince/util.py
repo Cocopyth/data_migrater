@@ -106,6 +106,7 @@ def get_data_info(local=False, suffix_data_info=""):
         data_info.index.name = "total_path"
         data_info.reset_index(inplace=True)
         data_info["Plate"] = data_info["Plate"].fillna(0)
+        print(data_info["Plate"].unique())
         data_info["unique_id"] = (
             data_info["Plate"]
             .astype(str)
